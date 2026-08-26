@@ -1,0 +1,207 @@
+/*
+ * Field Manual admin theme.
+ * Reuses the same palette/type tokens as the Next.js frontend:
+ * cream #EFE8D8, deep green #17261F, green #23392E, rust #C1602B.
+ * Overrides Django's built-in admin CSS custom properties, so it
+ * follows admin upgrades without needing to fight specificity.
+ */
+
+:root, html[data-theme="light"] {
+  --primary: #17261f;
+  --primary-fg: #efe8d8;
+  --secondary: #23392e;
+  --accent: #c1602b;
+
+  --body-fg: #17261f;
+  --body-bg: #efe8d8;
+  --body-quiet-color: rgba(23, 38, 31, 0.65);
+  --body-loud-color: #17261f;
+
+  --header-color: #efe8d8;
+  --header-branding-color: #efe8d8;
+  --header-bg: #17261f;
+  --header-link-color: #efe8d8;
+
+  --breadcrumbs-fg: #efe8d8;
+  --breadcrumbs-link-fg: #efe8d8;
+  --breadcrumbs-bg: #23392e;
+
+  --link-fg: #c1602b;
+  --link-hover-color: #a34f22;
+  --link-selected-fg: #c1602b;
+
+  --hairline-color: rgba(23, 38, 31, 0.22);
+  --border-color: rgba(23, 38, 31, 0.22);
+
+  --selected-bg: rgba(193, 96, 43, 0.12);
+  --selected-row: rgba(193, 96, 43, 0.12);
+
+  --button-bg: #17261f;
+  --button-fg: #efe8d8;
+  --button-hover-bg: #23392e;
+  --default-button-bg: #c1602b;
+  --default-button-hover-bg: #a34f22;
+  --close-button-bg: #6b6b6b;
+  --close-button-hover-bg: #4a4a4a;
+  --delete-button-bg: #a83232;
+  --delete-button-hover-bg: #7f2424;
+
+  --object-tools-bg: #c1602b;
+  --object-tools-hover-bg: #a34f22;
+
+  --font-family-primary: "Work Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  font-family: var(--font-family-primary);
+}
+
+/* Branding */
+#branding a,
+#branding h1,
+#branding h1 a {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  color: var(--header-branding-color) !important;
+}
+
+.fm-admin-tag {
+  font-family: "Zilla Slab", serif;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.75;
+  margin-left: 6px;
+}
+
+/* Headings use the display face, like the frontend */
+.module h2,
+.module caption,
+.inline-group h2,
+#content h1,
+#content-main > h2 {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.03em;
+  font-weight: 400;
+}
+
+/* Square corners everywhere, matching the frontend's hard edges */
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button,
+.object-tools a,
+.module,
+#content .module,
+.dashboard .module,
+select,
+textarea,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+.results,
+table {
+  border-radius: 0 !important;
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.03em;
+  font-size: 14px;
+}
+
+.module,
+#content .module,
+.dashboard .module {
+  border: 2px solid var(--body-fg);
+}
+
+/* Photo previews in the changelist and change form */
+.fm-thumb {
+  display: block;
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border: 2px solid var(--body-fg);
+  background: rgba(23, 38, 31, 0.05);
+}
+
+.fm-thumb--large {
+  width: 320px;
+  height: 220px;
+}
+
+.fm-thumb--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Zilla Slab", serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(23, 38, 31, 0.5);
+}
+
+.fm-thumb--large.fm-thumb--empty {
+  font-size: 13px;
+}
+
+/* Fieldset headers read like the frontend's eyebrow labels */
+fieldset.module h2 {
+  background: var(--secondary);
+}
+
+.field-image_url .help,
+.field-image .help {
+  font-family: "Work Sans", sans-serif;
+  color: var(--body-quiet-color);
+}
+
+/* Drag-and-drop zone for the image upload field */
+.fm-dropzone {
+  border: 2px dashed var(--border-color);
+  padding: 18px;
+  margin-bottom: 10px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(23, 38, 31, 0.03);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.fm-dropzone__label {
+  font-family: "Zilla Slab", serif;
+  font-size: 13px;
+  color: var(--body-quiet-color);
+}
+
+.fm-dropzone--active {
+  border-color: var(--accent);
+  background: rgba(193, 96, 43, 0.08);
+}
+
+.fm-unsaved-badge {
+  margin-top: 6px;
+  display: inline-block;
+  font-family: "Zilla Slab", serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+/* Quick-edit fields in the changelist (list_editable) */
+.results input[type="number"],
+.results input[type="text"] {
+  width: 90px;
+}

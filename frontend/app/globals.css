@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #efe8d8;
+  color: #17261f;
+}
+
+.eyebrow {
+  font-family: var(--font-slab), serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #c1602b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.btn-outline {
+  display: inline-block;
+  border: 2px solid #17261f;
+  padding: 11px 20px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+.btn-solid {
+  display: inline-block;
+  border: none;
+  background: #17261f;
+  color: #efe8d8;
+  padding: 11px 20px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+.permit-card {
+  background: #efe8d8;
+  border: 2px solid #17261f;
+  position: relative;
+  padding: 20px;
+}
+
+.permit-card::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 56px;
+  height: 56px;
+  border: 2px dashed #c1602b;
+  border-radius: 50%;
+}
+
+.status-tag {
+  display: inline-block;
+  background: #17261f;
+  color: #efe8d8;
+  font-family: var(--font-slab), serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+}
+
+.status-tag.pending {
+  background: #c1602b;
+}
+
+.status-tag.cancelled {
+  background: #4a4a4a;
+}
