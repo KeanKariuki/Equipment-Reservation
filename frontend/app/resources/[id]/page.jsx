@@ -2,7 +2,8 @@ import BookingForm from "@/components/BookingForm";
 import { getResource } from "@/lib/api";
 
 export default async function ResourceDetailPage({ params }) {
-  const resource = await getResource(params.id);
+  const { id } = await params;
+  const resource = await getResource(id);
 
   return (
     <section className="px-9 py-12 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-10">
