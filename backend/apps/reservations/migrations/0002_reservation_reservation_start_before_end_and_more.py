@@ -2,6 +2,7 @@
 
 import django.contrib.postgres.constraints
 from django.conf import settings
+from django.contrib.postgres.operations import BtreeGistExtension
 from django.db import migrations, models
 
 
@@ -14,6 +15,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Needed so the exclusion constraint below can compare the
+        # `resource` foreign key (a plain integer) for equality inside a
+        # GiST index alongside the date-range overlap check. Without this,
+        # Postgres has no operator class for integer types under GiST.
+        BtreeGistExtension(),
         migrations.AddConstraint(
             model_name='reservation',
             constraint=models.CheckConstraint(condition=models.Q(('start_datetime__lt', models.F('end_datetime'))), name='reservation_start_before_end'),
