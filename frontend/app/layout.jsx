@@ -34,16 +34,17 @@ export default function RootLayout({ children }) {
             Pay Now button on the bookings page can call window.PaystackPop
             without worrying about load timing. */}
         <Script src="https://js.paystack.co/v1/inline.js" strategy="afterInteractive" />
-        <header className="flex items-center justify-between px-9 py-5 border-b-2 border-fm-green-deep">
-          <Link href="/" className="font-display text-[26px] tracking-wide">
-            FIELD MANUAL
+        <header className="flex flex-nowrap items-center justify-between gap-2 px-3 py-4 sm:gap-0 sm:px-9 sm:py-5 border-b-2 border-fm-green-deep">
+          <Link href="/" aria-label="Field Manual home" className="shrink-0 font-display text-[22px] tracking-wide sm:text-[26px]">
+            <span className="sm:hidden">FM</span>
+            <span className="hidden sm:inline">FIELD MANUAL</span>
           </Link>
-          <nav className="flex gap-7 text-[13px] font-semibold uppercase tracking-wide">
+          <nav className="flex min-w-0 justify-center gap-2 whitespace-nowrap text-[10px] font-semibold uppercase tracking-wide sm:gap-7 sm:text-[13px]">
             <Link href="/">Catalogue</Link>
             <Link href="/bookings">My permits</Link>
             <Link href="/login">Account</Link>
           </nav>
-          <Link href="/" className="btn-solid">
+          <Link href="/" className="btn-solid shrink-0 whitespace-nowrap px-2 py-2 text-[12px] sm:px-5 sm:py-[11px] sm:text-[15px]">
             Reserve gear
           </Link>
         </header>
