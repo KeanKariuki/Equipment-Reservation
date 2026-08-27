@@ -1,17 +1,35 @@
-# Equipment Reservation App — Django + Next.js (Field Manual design)
+# Equipment Reservation App
 
-## What changed
-- **backend/** — added a real REST API (Django REST Framework):
-  - `GET /api/resources/` — browse resources (`?resource_type=` and `?category=` filters)
-  - `GET /api/resources/<id>/availability/?start=...&end=...` — availability check
-  - `GET/POST /api/reservations/`, `DELETE /api/reservations/<id>/` (cancel) — requires auth
-  - `POST /api/auth/register/`, `POST /api/auth/token/`, `GET /api/auth/me/` — token auth
-  - `reservation_service.py` computes the rental `subtotal` from the resource's
-    hourly/daily rate (rounds partial units up), and sets `security_deposit` to
-    50% of that subtotal. The deposit is stored separately; `total_amount`
-    currently represents the rental subtotal used for payment.
-  - CORS is configured for `http://localhost:3000`.
-- **frontend/** — Next.js (App Router) frontend in the "Field Manual" design.
+Equipment rental and reservation application with a Django REST Framework
+backend and a Next.js App Router frontend. It supports resource browsing,
+reservations, OTP authentication, photo uploads, and Paystack payments.
+
+## Project structure
+- `backend/` — Django API, PostgreSQL models, admin dashboard, management
+  commands, media storage, OTP email flow, and Paystack integration.
+- `frontend/` — Next.js interface for browsing resources, authentication,
+  booking equipment, and completing payments.
+
+## API routes
+- `GET /api/resources/` — browse active resources; supports `resource_type`
+  and `category` filters.
+- `GET /api/resources/<id>/` — view a resource.
+- `GET /api/resources/<id>/availability/?start=...&end=...` — check availability.
+- `GET/POST /api/reservations/` — list or create the authenticated user's
+  reservations.
+- `DELETE /api/reservations/<id>/` — cancel an authenticated user's reservation.
+- `POST /api/auth/register/` — create an inactive account and send a signup OTP.
+- `POST /api/auth/register/verify/` — verify the signup OTP and return a token.
+- `POST /api/auth/login/` — validate credentials and send a login OTP.
+- `POST /api/auth/login/verify/` — verify the login OTP and return a token.
+- `POST /api/auth/otp/resend/` — resend a signup or login OTP.
+- `GET /api/auth/me/` — return the authenticated user.
+- `POST /api/payments/initialize/` — create a Paystack payment reference.
+- `POST /api/payments/verify/` — verify a payment with Paystack.
+- `POST /api/payments/webhook/` — receive signed Paystack payment events.
+
+Resource and reservation mutations require token authentication. Public
+catalogue and authentication routes are available without a token.
 
 ## Run the backend
 ```
@@ -24,7 +42,25 @@ python manage.py createsuperuser   # to add resources via /admin/
 python manage.py seed_resources    # adds 10 sample equipment items with photos
 python manage.py runserver
 ```
-Requires a running PostgreSQL matching `backend/.env`.
+Requires a running PostgreSQL database configured by `backend/.env`.
+
+For local development, the email backend defaults to Django's console backend,
+so OTP messages are printed in the backend terminal. To deliver real emails,
+configure SMTP settings in `backend/config/settings.py` and the environment,
+for example:
+
+```env
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-google-app-password
+DEFAULT_FROM_EMAIL=your-email@gmail.com
+```
+
+Use a provider app password or SMTP credential, never a normal account
+password. Keep these values out of Git.
 
 ## Run the frontend
 ```
@@ -34,6 +70,33 @@ cp .env.local.example .env.local
 npm run dev
 ```
 Opens on http://localhost:3000, talking to the API at http://localhost:8000/api.
+
+## Authentication and admin
+
+Registration and login use email OTP verification. The OTP service creates a
+short-lived code, sends it to the user's email, and consumes it after a
+successful verification. The default local console backend does not deliver
+messages to an inbox; production deployments need SMTP configuration as
+described above.
+
+Create a local admin interactively:
+
+```text
+python manage.py createsuperuser
+```
+
+For deployments without shell access, `ensure_superuser` safely creates or
+updates an admin from these environment variables:
+
+```env
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@example.com
+DJANGO_SUPERUSER_PASSWORD=use-a-secret-password
+```
+
+Run it with `python manage.py ensure_superuser`. The admin dashboard is at
+`/admin/` and includes resources, reservations, users, and read-mostly payment
+records.
 
 ## Pricing
 Rental units are rounded up to the next whole hour or day. For a rental with
@@ -58,7 +121,7 @@ recorded separately on the reservation.
 - Pricing math spot-checked: hourly/daily rates round partial units up correctly,
   and the security deposit is 50% of the rental subtotal.
 
-## Sample photos
+## Resource images and storage
 `Resource` now has two photo-related fields:
 - `image` — a real file upload (needs `Pillow`, added to `requirements.txt`)
 - `image_url` — an optional link to a photo hosted elsewhere, used only as a
@@ -68,24 +131,19 @@ The API always returns one resolved `image_url` — an uploaded photo wins
 over a linked one — so the frontend doesn't need to know which was used.
 
 `python manage.py seed_resources` creates 10 camera/photography equipment
-items (mirrorless body, lenses, gimbal, lighting kit, drone, etc.) using
-placeholder photos from picsum.photos so the catalogue isn't empty out of
-the box. Each item's placeholder is deterministic (same item = same photo),
-so re-running the command is safe. Run with `--reset` to delete and
-recreate the seeded items.
+items with deterministic sample images. Re-running the command is safe; use
+`python manage.py seed_resources --reset` to delete and recreate the seeded
+items.
 
-Uploaded photos are saved to `backend/media/` and served locally in dev via
-`config/urls.py`. **For production, don't rely on local disk storage** —
-swap in a real storage backend (e.g. `django-storages` with S3/Cloudinary)
-so uploads survive deploys.
+The API also serves committed demo images through `/seed-images/<path>` so they
+survive deployments. Uploaded files are served from local `backend/media/`
+when `DEBUG=True`.
 
-## Admin dashboard — no developer needed for day-to-day updates
-`/admin/` is reskinned to match the frontend's "Field Manual" look (same
-colors, same fonts) so it feels like part of the product rather than a
-separate tool. The Resource edit screen leads with a photo preview and an
-upload button — whoever runs the day-to-day catalogue can add or swap a
-photo, change a price, or mark something inactive without touching code.
-Create their login with `python manage.py createsuperuser`.
+For production, set `CLOUDINARY_URL`. The configured storage backend then
+switches automatically to Cloudinary; without it, uploads use local disk and
+can be lost when a host restarts or redeploys.
+
+The Resource admin edit screen provides photo preview and upload controls.
 
 ## Payments — Paystack
 Reservations get paid for via Paystack's **Inline** popup (`PayButton.jsx`
