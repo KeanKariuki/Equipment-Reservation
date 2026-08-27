@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
 
     # Third-party
+    "cloudinary_storage",
+    "cloudinary",
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
@@ -141,7 +143,21 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Media storage: Cloudinary when CLOUDINARY_URL is set (production -- Render's
+# free disk is wiped on every restart, so uploaded photos need to live
+# somewhere else), otherwise plain local disk (fine for local dev, where the
+# filesystem actually persists between runs).
+_default_storage_backend = (
+    "cloudinary_storage.storage.MediaCloudinaryStorage"
+    if env("CLOUDINARY_URL", default="")
+    else "django.core.files.storage.FileSystemStorage"
+)
+
 STORAGES = {
+    "default": {
+        "BACKEND": _default_storage_backend,
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
@@ -153,6 +169,9 @@ STORAGES = {
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
+# Email
+# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
